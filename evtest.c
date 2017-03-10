@@ -279,7 +279,7 @@ char **names[EV_MAX + 1] = {
 #define LONG(x) ((x)/BITS_PER_LONG)
 #define test_bit(bit, array)  ((array[LONG(bit)] >> OFF(bit)) & 1)
 
-int wvTest (int argc, char **argv) {
+int evTest (int argc, char **argv) {
 	int fd, rd, i, j, k;
 	struct input_event ev[64];
 	int version;

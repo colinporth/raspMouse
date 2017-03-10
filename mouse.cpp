@@ -18,6 +18,19 @@
 #include <linux/input.h>
 
 #include "../shared/cLog.h"
+
+//{{{
+#ifdef __cplusplus
+  extern "C" {
+#endif
+//}}}
+int evTest (int argc, char **argv);
+//{{{
+#ifdef __cplusplus
+  }
+#endif
+//}}}
+
 //}}}
 
 //{{{
