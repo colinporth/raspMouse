@@ -20,7 +20,7 @@
 #include "../shared/cLog.h"
 
 extern "C" {
-  int evTest (int argc, char **argv);
+  int evtest (int argc, char **argv);
   }
 //}}}
 
@@ -38,7 +38,7 @@ int main (int argc, char** argv) {
   cLog::Init ("", LOGINFO3);
   cLog::Log (LOGNOTICE, "mouse");
 
-  evTest (argc, argv);
+  evtest (argc, argv);
 
   int mScreenWidth = 800;
   int mScreenHeight = 480;
