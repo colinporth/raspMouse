@@ -21,8 +21,8 @@ all:    mouse
 	$(CXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 mouse:      $(OBJS)
-	$(CXX) $(LDFLAGS) -o mouseX $(OBJS)
-	$(STRIP) mouseX
+	$(CXX) $(LDFLAGS) -o mouse $(OBJS)
+	$(STRIP) mouse
 
 clean:
 	@rm -f *.o

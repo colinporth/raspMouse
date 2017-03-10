@@ -40,7 +40,7 @@ int main (int argc, char** argv) {
   cLog::Init ("", LOGINFO3);
   cLog::Log (LOGNOTICE, "mouse");
 
-  int mMouseFd = open ("/dev/input/mouse0", O_RDONLY | O_NONBLOCK);
+  int mMouseFd = open ("/dev/input/mouse0", O_RDONLY);
   int mScreenWidth = 800;
   int mScreenHeight = 480;
 
@@ -51,8 +51,10 @@ int main (int argc, char** argv) {
   while (true) {
     struct sMousePacket mousePacket;
     int bytes = read (mMouseFd, &mousePacket, sizeof(mousePacket));
+
     if (bytes < (int)sizeof(mousePacket))
       cLog::Log (LOGINFO1, "mouse bytes %d", bytes);
+
     else if (mousePacket.buttons & 8) {
       mMousex += (mousePacket.buttons & 0x10) ? mousePacket.dx - 256 : mousePacket.dx;
       if (mMousex < 0)
@@ -70,7 +72,8 @@ int main (int argc, char** argv) {
       cLog::Log (LOGINFO1, "mouse %d %d %d %d %d",
                  mousePacket.buttons, mousePacket.dx, mousePacket.dy, mMousex, mMousey);
       }
-    else 
+
+    else
       read (mMouseFd, &mousePacket, 1); // Try to sync up again
     }
 
