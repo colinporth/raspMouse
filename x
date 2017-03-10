@@ -26,4 +26,4 @@ mouse:      $(OBJS)
 
 clean:
 	@rm -f *.o
-	@rm -f mouseX
+	@rm -f mouse

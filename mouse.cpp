@@ -50,35 +50,28 @@ int main (int argc, char** argv) {
 
   while (true) {
     struct sMousePacket mousePacket;
-    while (true) {
-      int bytes = read (mMouseFd, &mousePacket, sizeof(mousePacket));
-      if (bytes < (int)sizeof(mousePacket)) {
-         // not enough bytes yet
-        //*outx = mMousex;
-        //*outy = mMousey;
-        return mMouseButtons;
-        }
+    int bytes = read (mMouseFd, &mousePacket, sizeof(mousePacket));
+    if (bytes < (int)sizeof(mousePacket))
+      cLog::Log (LOGINFO1, "mouse bytes %d", bytes);
+    else if (mousePacket.buttons & 8) {
+      mMousex += (mousePacket.buttons & 0x10) ? mousePacket.dx - 256 : mousePacket.dx;
+      if (mMousex < 0)
+        mMousex = 0;
+      else if (mMousex > (int)mScreenWidth)
+        mMousex = mScreenWidth;
 
-      if (mousePacket.buttons & 8)
-        break; // This bit should always be set
-      read (mMouseFd, &mousePacket, 1); // Try to sync up again
+      mMousey -= (mousePacket.buttons & 0x20) ? mousePacket.dy - 256 : mousePacket.dy;
+      if (mMousey < 0)
+        mMousey = 0;
+      else if (mMousey > (int)mScreenHeight)
+        mMousey = mScreenHeight;
+
+      mMouseButtons = mousePacket.buttons & 0x03;
+      cLog::Log (LOGINFO1, "mouse %d %d %d %d %d",
+                 mousePacket.buttons, mousePacket.dx, mousePacket.dy, mMousex, mMousey);
       }
-
-    mMousex += (mousePacket.buttons & 0x10) ? mousePacket.dx - 256 : mousePacket.dx;
-    if (mMousex < 0)
-      mMousex = 0;
-    else if (mMousex > (int)mScreenWidth)
-      mMousex = mScreenWidth;
-
-    mMousey -= (mousePacket.buttons & 0x20) ? mousePacket.dy - 256 : mousePacket.dy;
-    if (mMousey < 0)
-      mMousey = 0;
-    else if (mMousey > (int)mScreenHeight)
-      mMousey = mScreenHeight;
-
-    mMouseButtons = mousePacket.buttons & 0x03;
-    cLog::Log (LOGINFO1, "mouse %d %d %d %d %d", 
-               mousePacket.buttons, mousePacket.dx, mousePacket.dy, mMousex, mMousey);
+    else 
+      read (mMouseFd, &mousePacket, 1); // Try to sync up again
     }
 
   return 0;
