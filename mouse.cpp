@@ -40,13 +40,14 @@ int main (int argc, char** argv) {
   cLog::Init ("", LOGINFO3);
   cLog::Log (LOGNOTICE, "mouse");
 
-  int mMouseFd = open ("/dev/input/mouse0", O_RDONLY);
   int mScreenWidth = 800;
   int mScreenHeight = 480;
 
+  int mMouseButtons = 0;
   int mMousex = mScreenWidth/2;
   int mMousey = mScreenHeight/2;
-  int mMouseButtons = 0;
+
+  int mMouseFd = open ("/dev/input/mouse0", O_RDONLY);
 
   while (true) {
     struct sMousePacket mousePacket;
@@ -69,12 +70,14 @@ int main (int argc, char** argv) {
         mMousey = mScreenHeight;
 
       mMouseButtons = mousePacket.buttons & 0x03;
-      cLog::Log (LOGINFO1, "mouse %d %d %d %d %d",
+      cLog::Log (LOGINFO1, "mouse %x %x %x - %d %d",
                  mousePacket.buttons, mousePacket.dx, mousePacket.dy, mMousex, mMousey);
       }
 
-    else
+    else {
       read (mMouseFd, &mousePacket, 1); // Try to sync up again
+      cLog::Log (LOGINFO1, "resysnc");
+      }
     }
 
   return 0;
