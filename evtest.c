@@ -442,13 +442,9 @@ char **names[EV_MAX + 1] = {
 static int is_event_device (const struct dirent *dir) {
 	return strncmp ("event", dir->d_name, 5) == 0;
 	}
-
 /*}}}*/
 /*{{{*/
-static char* scan_devices(void)
-{
-	int i, devnum;
-	char* filename;
+static char* scan_devices() {
 
 	struct dirent** namelist;
 	int ndev = scandir ("/dev/input", &namelist, is_event_device, alphasort);
@@ -457,28 +453,28 @@ static char* scan_devices(void)
 
 	fprintf (stderr, "Available devices:\n");
 
-	for (i = 0; i < ndev; i++) {
+	for (int i = 0; i < ndev; i++) {
 		char fname[64];
-		int fd = -1;
-		char name[256] = "???";
-
-		snprintf(fname, sizeof(fname), "%s/%s", "/dev/input", namelist[i]->d_name);
-		fd = open( fname, O_RDONLY);
+		snprintf (fname, sizeof(fname), "%s/%s", "/dev/input", namelist[i]->d_name);
+		int fd = open (fname, O_RDONLY);
 		if (fd < 0)
 			continue;
-		ioctl(fd, EVIOCGNAME(sizeof(name)), name);
 
-		fprintf(stderr, "%s:  %s\n", fname, name);
-		close(fd);
-		free(namelist[i]);
+		char name[256] = "???";
+		ioctl (fd, EVIOCGNAME (sizeof(name)), name);
+		fprintf (stderr, "%s:  %s\n", fname, name);
+
+		close (fd);
+		free (namelist[i]);
 		}
 
-	fprintf(stderr, "Select the device event number [0-%d]: ", ndev - 1);
-	scanf("%d", &devnum);
-
+	fprintf (stderr, "Select the device event number [0-%d]: ", ndev - 1);
+	int devnum;
+	scanf ("%d", &devnum);
 	if (devnum >= ndev || devnum < 0)
 		return NULL;
 
+	char* filename;
 	asprintf (&filename, "%s/%s%d", "/dev/input", "event", devnum);
 
 	return filename;
@@ -486,17 +482,15 @@ static char* scan_devices(void)
 /*}}}*/
 
 /*{{{*/
-static void usage(void)
-{
-	printf("Usage: evtest /dev/input/eventX\n");
-	printf("Where X = input device number\n");
-}
+static void usage() {
+	printf ("Usage: evtest /dev/input/eventX\n");
+	printf ("Where X = input device number\n");
+	}
 /*}}}*/
 /*{{{*/
-static char* parse_args(int argc, char **argv)
-{
-	char *filename;
+static char* parse_args (int argc, char **argv) {
 
+	char* filename;
 	if (argc < 2) {
 		fprintf(stderr, "No device specified, trying to scan all of %s/%s*\n",
 			"/dev/input", "event");
@@ -508,186 +502,150 @@ static char* parse_args(int argc, char **argv)
 		if (!filename) {
 			usage();
 			return NULL;
-		}
-	} else
-		filename = strdup(argv[argc - 1]);
+			}
+		} 
+	else
+		filename = strdup (argv[argc - 1]);
 
 	return filename;
-}
+	}
 /*}}}*/
 
 /*{{{*/
-/**
- * Print additional information for absolute axes (min/max, current value,
- * etc.).
- * @param fd The file descriptor to the device.
- * @param axis The axis identifier (e.g. ABS_X).
- */
-static void print_absdata(int fd, int axis)
-{
+static void print_absdata (int fd, int axis) {
+
 	int abs[6] = {0};
 	int k;
 
-	ioctl(fd, EVIOCGABS(axis), abs);
+	ioctl (fd, EVIOCGABS (axis), abs);
 	for (k = 0; k < 6; k++)
 		if ((k < 3) || abs[k])
-			printf("      %s %6d\n", absval[k], abs[k]);
-}
+			printf ("      %s %6d\n", absval[k], abs[k]);
+	}
 /*}}}*/
 /*{{{*/
-/**
- * Print static device information (no events). This information includes
- * version numbers, device name and all bits supported by this device.
- * @param fd The file descriptor to the device.
- * @return 0 on success or 1 otherwise.
- */
-static int print_device_info(int fd)
-{
+static int print_device_info (int fd) {
+
 	int i, j;
 	int version;
 	unsigned short id[4];
 	char name[256] = "Unknown";
 	unsigned long bit[EV_MAX][NBITS(KEY_MAX)];
 
-	if (ioctl(fd, EVIOCGVERSION, &version)) {
-		perror("evtest: can't get version");
+	if (ioctl (fd, EVIOCGVERSION, &version)) {
+		perror ("evtest: can't get version");
 		return 1;
-	}
+		}
 
-	printf("Input driver version is %d.%d.%d\n",
-		version >> 16, (version >> 8) & 0xff, version & 0xff);
+	printf ("Input driver version is %d.%d.%d\n", version >> 16, (version >> 8) & 0xff, version & 0xff);
 
-	ioctl(fd, EVIOCGID, id);
-	printf("Input device ID: bus 0x%x vendor 0x%x product 0x%x version 0x%x\n",
-		id[ID_BUS], id[ID_VENDOR], id[ID_PRODUCT], id[ID_VERSION]);
+	ioctl (fd, EVIOCGID, id);
+	printf ("Input device ID: bus 0x%x vendor 0x%x product 0x%x version 0x%x\n",
+					id[ID_BUS], id[ID_VENDOR], id[ID_PRODUCT], id[ID_VERSION]);
 
-	ioctl(fd, EVIOCGNAME(sizeof(name)), name);
-	printf("Input device name: \"%s\"\n", name);
+	ioctl (fd, EVIOCGNAME (sizeof (name)), name);
+	printf ("Input device name: \"%s\"\n", name);
 
-	memset(bit, 0, sizeof(bit));
-	ioctl(fd, EVIOCGBIT(0, EV_MAX), bit[0]);
-	printf("Supported events:\n");
+	memset (bit, 0, sizeof(bit));
+	ioctl( fd, EVIOCGBIT (0, EV_MAX), bit[0]);
+	printf ("Supported events:\n");
 
 	for (i = 0; i < EV_MAX; i++)
 		if (test_bit(i, bit[0])) {
-			printf("  Event type %d (%s)\n", i, events[i] ? events[i] : "?");
-			if (!i) continue;
-			ioctl(fd, EVIOCGBIT(i, KEY_MAX), bit[i]);
+			printf ("  Event type %d (%s)\n", i, events[i] ? events[i] : "?");
+			if (!i) 
+				continue;
+			ioctl (fd, EVIOCGBIT(i, KEY_MAX), bit[i]);
 			for (j = 0; j < KEY_MAX; j++)
 				if (test_bit(j, bit[i])) {
-					printf("    Event code %d (%s)\n", j, names[i] ? (names[i][j] ? names[i][j] : "?") : "?");
+					printf ("    Event code %d (%s)\n", j, names[i] ? (names[i][j] ? names[i][j] : "?") : "?");
 					if (i == EV_ABS)
-						print_absdata(fd, j);
-				}
-		}
+						print_absdata (fd, j);
+					}
+			}
 
 	return 0;
-}
+	}
 /*}}}*/
 
 /*{{{*/
-/**
- * Print device events as they come in.
- * @param fd The file descriptor to the device.
- * @return 0 on success or 1 otherwise.
- */
-static int print_events(int fd)
-{
+static int print_events (int fd) {
+
 	struct input_event ev[64];
 	int i, rd;
 
 	while (1) {
-		rd = read(fd, ev, sizeof(struct input_event) * 64);
+		rd = read (fd, ev, sizeof(struct input_event) * 64);
 
-		if (rd < (int) sizeof(struct input_event)) {
-			printf("expected %d bytes, got %d\n", (int) sizeof(struct input_event), rd);
-			perror("\nevtest: error reading");
+		if (rd < (int) sizeof (struct input_event)) {
+			printf ("expected %d bytes, got %d\n", (int) sizeof(struct input_event), rd);
+			perror ("\nevtest: error reading");
 			return 1;
-		}
+			}
 
 		for (i = 0; i < rd / sizeof(struct input_event); i++) {
-			printf("Event: time %ld.%06ld, ", ev[i].time.tv_sec, ev[i].time.tv_usec);
+			printf ("Event: time %ld.%06ld, ", ev[i].time.tv_sec, ev[i].time.tv_usec);
 
 			if (ev[i].type == EV_SYN) {
 				if (ev[i].code == SYN_MT_REPORT)
-					printf("++++++++++++++ %s ++++++++++++\n", syns[ev[i].code]);
+					printf ("++++++++++++++ %s ++++++++++++\n", syns[ev[i].code]);
 				else
-					printf("-------------- %s ------------\n", syns[ev[i].code]);
-			} else {
-				printf("type %d (%s), code %d (%s), ",
+					printf ("-------------- %s ------------\n", syns[ev[i].code]);
+				} 
+			else {
+				printf ("type %d (%s), code %d (%s), ",
 					ev[i].type,
 					events[ev[i].type] ? events[ev[i].type] : "?",
 					ev[i].code,
 					names[ev[i].type] ? (names[ev[i].type][ev[i].code] ? names[ev[i].type][ev[i].code] : "?") : "?");
+
 				if (ev[i].type == EV_MSC && (ev[i].code == MSC_RAW || ev[i].code == MSC_SCAN))
-					printf("value %02x\n", ev[i].value);
+					printf ("value %02x\n", ev[i].value);
 				else
-					printf("value %d\n", ev[i].value);
+					printf ("value %d\n", ev[i].value);
+				}
 			}
 		}
-
 	}
-}
 /*}}}*/
 /*{{{*/
-/**
- * Grab and immediately ungrab the device.
- * @param fd The file descriptor to the device.
- * @return 0 if the grab was successful, or 1 otherwise.
- */
-static int test_grab(int fd)
-{
-	int rc;
+static int test_grab (int fd) {
 
-	rc = ioctl(fd, EVIOCGRAB, (void*)1);
-
+	int rc = ioctl(fd, EVIOCGRAB, (void*)1);
 	if (!rc)
 		ioctl(fd, EVIOCGRAB, (void*)0);
-
 	return rc;
-}
+	}
 /*}}}*/
 
 /*{{{*/
-int evtest (int argc, char **argv)
-{
-	int fd;
-	char *filename;
-	filename = parse_args(argc, argv);
+int evtest (int argc, char **argv) {
 
+	char* filename = parse_args(argc, argv);
 	if (!filename)
 		return 1;
 
-	if ((fd = open(filename, O_RDONLY)) < 0) {
-		perror("evtest");
+	int fd;
+	if ((fd = open (filename, O_RDONLY)) < 0) {
+		perror ("evtest");
 		if (errno == EACCES && getuid() != 0)
-			fprintf(stderr, "You do not have access to %s. Try "
-					"running as root instead.\n",
-					filename);
+			fprintf (stderr, "You do not have access to %s. Try " "running as root instead.\n", filename);
 		return 1;
-	}
+		}
 
-	free(filename);
+	free (filename);
 
-	if (!isatty(fileno(stdout)))
-		setbuf(stdout, NULL);
+	if (!isatty (fileno (stdout)))
+		setbuf (stdout, NULL);
 
-	if (print_device_info(fd))
+	if (print_device_info (fd))
 		return 1;
 
-	printf("Testing ... (interrupt to exit)\n");
+	printf ("Testing ... (interrupt to exit)\n");
 
-	if (test_grab(fd))
-	{
-		printf("***********************************************\n");
-		printf("  This device is grabbed by another process.\n");
-		printf("  No events are available to evtest while the\n"
-					 "  other grab is active.\n");
-		printf("  In most cases, this is caused by an X driver,\n"
-					 "  try VT-switching and re-run evtest again.\n");
-		printf("***********************************************\n");
-	}
+	if (test_grab (fd))
+		printf ("  This device is grabbed by another process.\n");
 
 	return print_events(fd);
-}
+	}
 /*}}}*/

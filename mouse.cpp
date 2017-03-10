@@ -52,7 +52,7 @@ int main (int argc, char** argv) {
   auto mMouseFd = open ("/dev/input/mice", O_RDWR);
 
   const uint8_t kIntelliMouse[] = { 0xf3, 200, 0xf3, 100, 0xf3, 80 };
-  auto bytes = write (mMouseFd, kIntelliMouse, sizeof(kIntelliMouse));
+  write (mMouseFd, kIntelliMouse, sizeof(kIntelliMouse));
 
   while (true) {
     struct sMousePacket mousePacket;
@@ -80,9 +80,9 @@ int main (int argc, char** argv) {
       mMouseButtons = mousePacket.flags & 0x03;
       mScroll += mousePacket.ext;
 
-      cLog::Log (LOGINFO, "mouse %x %x %x %x  %d:%d %d",
+      cLog::Log (LOGINFO, "mouse %x %x %x %x  %d:%d s:%d b:%d",
                  mousePacket.flags, mousePacket.dx, mousePacket.dy, mousePacket.ext,
-                 mMousex, mMousey, mScroll);
+                 mMousex, mMousey, mScroll, mMouseButtons);
       }
 
     else {

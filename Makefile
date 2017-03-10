@@ -15,7 +15,7 @@ all: mouse
 
 %.o: %.c
 	@rm -f $@
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) -std=c11 -c $< -o $@
 
 %.o: %.cpp
 	@rm -f $@
