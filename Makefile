@@ -33,3 +33,9 @@ clean:
 	@rm -f *.o
 	@rm -f ../shared/*.o
 	@rm -f mouse
+
+ifndef LOGNAME
+SDKSTAGE  = /SysGCC/Raspberry/arm-linux-gnueabihf/sysroot
+endif
+CC      := arm-linux-gnueabihf-g
+CXX     := arm-linux-gnueabihf-g++
