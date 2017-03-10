@@ -50,9 +50,12 @@ int main (int argc, char** argv) {
   while (true) {
     struct sMousePacket mousePacket;
     int bytes = read (mMouseFd, &mousePacket, sizeof(mousePacket));
-
-    if (bytes < (int)sizeof(mousePacket))
-      cLog::Log (LOGINFO1, "mouse bytes %d %x", bytes, mousePacket.flags);
+    if (bytes < (int)sizeof(mousePacket)) {
+      if ((bytes == 1) && (mousePacket.flags == 0xfa))
+        cLog::Log (LOGINFO1, "mouse initial sync ok");
+      else
+        cLog::Log (LOGINFO1, "mouse bytes %d %x", bytes, mousePacket.flags);
+      }
 
     else if (mousePacket.flags & 8) {
       mMousex += mousePacket.dx;
@@ -76,7 +79,7 @@ int main (int argc, char** argv) {
       }
 
     else {
-      read (mMouseFd, &mousePacket, 1); // Try to sync up again
+      read (mMouseFd, &mousePacket, 1);
       cLog::Log (LOGINFO2, "resysnc");
       }
     }
