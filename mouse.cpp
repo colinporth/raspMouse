@@ -41,7 +41,8 @@ int main (int argc, char** argv) {
   int mMousey = mScreenHeight/2;
   int mScroll = 0;
 
-  int mMouseFd = open ("/dev/input/mouse0", O_RDWR);
+  //int mMouseFd = open ("/dev/input/mouse0", O_RDWR);
+  int mMouseFd = open ("/dev/input/mice", O_RDWR);
 
   const uint8_t kIntelliMouse[] = { 0xf3, 200, 0xf3, 100, 0xf3, 80 };
   int bytes = write (mMouseFd, kIntelliMouse, sizeof(kIntelliMouse));
