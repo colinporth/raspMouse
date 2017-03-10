@@ -21,9 +21,10 @@
 
 //{{{
 struct sMousePacket {
-  char buttons;
+  uint8_t buttons;
   int8_t dx;
   int8_t dy;
+  uint8_t n;
   };
 //}}}
 //{{{
@@ -34,6 +35,9 @@ void miliSleep (int milisec) {
   nanosleep (&req, (struct timespec *)NULL);
   }
 //}}}
+
+uint8_t mousedev_imps_seq[] = { 0xf3, 200, 0xf3, 100, 0xf3, 80 };
+uint8_t mousedev_imex_seq[] = { 0xf3, 200, 0xf3, 200, 0xf3, 80 };
 
 int main (int argc, char** argv) {
 
@@ -47,7 +51,8 @@ int main (int argc, char** argv) {
   int mMousex = mScreenWidth/2;
   int mMousey = mScreenHeight/2;
 
-  int mMouseFd = open ("/dev/input/mouse0", O_RDONLY);
+  int mMouseFd = open ("/dev/input/mouse0", O_RDWR);
+  int bytes = write (mMouseFd, mousedev_imps_seq, sizeof(mousedev_imex_seq));
 
   while (true) {
     struct sMousePacket mousePacket;
