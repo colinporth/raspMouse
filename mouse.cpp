@@ -22,8 +22,8 @@
 //{{{
 struct sMousePacket {
   char buttons;
-  char dx;
-  char dy;
+  int8_t dx;
+  int8_t dy;
   };
 //}}}
 //{{{
@@ -57,13 +57,13 @@ int main (int argc, char** argv) {
       cLog::Log (LOGINFO1, "mouse bytes %d", bytes);
 
     else if (mousePacket.buttons & 8) {
-      mMousex += (mousePacket.buttons & 0x10) ? mousePacket.dx - 256 : mousePacket.dx;
+      mMousex += mousePacket.dx;
       if (mMousex < 0)
         mMousex = 0;
       else if (mMousex > (int)mScreenWidth)
         mMousex = mScreenWidth;
 
-      mMousey -= (mousePacket.buttons & 0x20) ? mousePacket.dy - 256 : mousePacket.dy;
+      mMousey -= mousePacket.dy;
       if (mMousey < 0)
         mMousey = 0;
       else if (mMousey > (int)mScreenHeight)
