@@ -24,20 +24,9 @@ struct sMousePacket {
   uint8_t flags;
   int8_t dx;
   int8_t dy;
-  uint8_t ext;
+  int8_t ext;
   };
 //}}}
-//{{{
-void miliSleep (int milisec) {
-  struct timespec req = { 0 };
-  req.tv_sec = 0;
-  req.tv_nsec = milisec * 1000000L;
-  nanosleep (&req, (struct timespec *)NULL);
-  }
-//}}}
-
-uint8_t mousedev_imps_seq[] = { 0xf3, 200, 0xf3, 100, 0xf3, 80 };
-uint8_t mousedev_imex_seq[] = { 0xf3, 200, 0xf3, 200, 0xf3, 80 };
 
 int main (int argc, char** argv) {
 
@@ -53,7 +42,9 @@ int main (int argc, char** argv) {
   int mScroll = 0;
 
   int mMouseFd = open ("/dev/input/mouse0", O_RDWR);
-  int bytes = write (mMouseFd, mousedev_imps_seq, sizeof(mousedev_imex_seq));
+
+  const uint8_t kIntelliMouse[] = { 0xf3, 200, 0xf3, 100, 0xf3, 80 };
+  int bytes = write (mMouseFd, kIntelliMouse, sizeof(kIntelliMouse));
 
   while (true) {
     struct sMousePacket mousePacket;
@@ -78,14 +69,14 @@ int main (int argc, char** argv) {
       mMouseButtons = mousePacket.flags & 0x03;
       mScroll += mousePacket.ext;
 
-      cLog::Log (LOGINFO1, "mouse %x %x %x %x  %d:%d %d",
+      cLog::Log (LOGINFO, "mouse %x %x %x %x  %d:%d %d",
                  mousePacket.flags, mousePacket.dx, mousePacket.dy, mousePacket.ext,
                  mMousex, mMousey, mScroll);
       }
 
     else {
       read (mMouseFd, &mousePacket, 1); // Try to sync up again
-      cLog::Log (LOGINFO1, "resysnc");
+      cLog::Log (LOGINFO2, "resysnc");
       }
     }
 
