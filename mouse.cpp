@@ -52,7 +52,7 @@ int main (int argc, char** argv) {
     int bytes = read (mMouseFd, &mousePacket, sizeof(mousePacket));
 
     if (bytes < (int)sizeof(mousePacket))
-      cLog::Log (LOGINFO1, "mouse bytes %d", bytes);
+      cLog::Log (LOGINFO1, "mouse bytes %d %x", bytes, mousePacket.flags);
 
     else if (mousePacket.flags & 8) {
       mMousex += mousePacket.dx;
