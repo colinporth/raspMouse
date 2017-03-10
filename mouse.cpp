@@ -21,7 +21,7 @@
 
 //{{{
 struct sMousePacket {
-  uint8_t buttons;
+  uint8_t flags;
   int8_t dx;
   int8_t dy;
   uint8_t ext;
@@ -50,6 +50,7 @@ int main (int argc, char** argv) {
   int mMouseButtons = 0;
   int mMousex = mScreenWidth/2;
   int mMousey = mScreenHeight/2;
+  int mScroll = 0;
 
   int mMouseFd = open ("/dev/input/mouse0", O_RDWR);
   int bytes = write (mMouseFd, mousedev_imps_seq, sizeof(mousedev_imex_seq));
@@ -61,7 +62,7 @@ int main (int argc, char** argv) {
     if (bytes < (int)sizeof(mousePacket))
       cLog::Log (LOGINFO1, "mouse bytes %d", bytes);
 
-    else if (mousePacket.buttons & 8) {
+    else if (mousePacket.flags & 8) {
       mMousex += mousePacket.dx;
       if (mMousex < 0)
         mMousex = 0;
@@ -74,9 +75,12 @@ int main (int argc, char** argv) {
       else if (mMousey > (int)mScreenHeight)
         mMousey = mScreenHeight;
 
-      mMouseButtons = mousePacket.buttons & 0x03;
-      cLog::Log (LOGINFO1, "mouse %x %x %x %x  %d:%d",
-                 mousePacket.buttons, mousePacket.dx, mousePacket.dy, mousePacket.ext, mMousex, mMousey);
+      mMouseButtons = mousePacket.flags & 0x03;
+      mScroll += mousePacket.ext;
+
+      cLog::Log (LOGINFO1, "mouse %x %x %x %x  %d:%d %d",
+                 mousePacket.flags, mousePacket.dx, mousePacket.dy, mousePacket.ext,
+                 mMousex, mMousey, mScroll);
       }
 
     else {
