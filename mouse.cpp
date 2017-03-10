@@ -19,18 +19,9 @@
 
 #include "../shared/cLog.h"
 
-//{{{
-#ifdef __cplusplus
-  extern "C" {
-#endif
-//}}}
-int evTest (int argc, char **argv);
-//{{{
-#ifdef __cplusplus
+extern "C" {
+  int evTest (int argc, char **argv);
   }
-#endif
-//}}}
-
 //}}}
 
 //{{{
@@ -47,7 +38,7 @@ int main (int argc, char** argv) {
   cLog::Init ("", LOGINFO3);
   cLog::Log (LOGNOTICE, "mouse");
 
-  evtest (arg, argv);
+  evTest (argc, argv);
 
   int mScreenWidth = 800;
   int mScreenHeight = 480;
