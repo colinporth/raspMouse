@@ -1,28 +1,35 @@
-CXX      := /usr/bin/g++
-STRIP    := /usr/bin/strip
+CFLAGS   += -D STANDALONE -D __STDC_CONSTANT_MACROS -D __STDC_LIMIT_MACROS -D TARGET_POSIX -D _LINUX \
+	    -D PIC -D _REENTRANT -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
+	    -D HAVE_LIBOPENMAX=2 -D OMX -D OMX_SKIP64BIT -D USE_EXTERNAL_OMX -D HAVE_LIBBCM_HOST \
+	    -D USE_EXTERNAL_LIBBCM_HOST -D USE_VCHIQ_ARM \
+	    -U _FORTIFY_SOURCE \
+	    -g -O2 -Wall -Wno-psabi -Wno-deprecated-declarations -fPIC -ftree-vectorize -pipe
 
-SRC       =  mouse.cpp ../shared/cLog.cpp
+LDFLAGS  += -lpthread -lrt -lm  \
 
-CFLAGS   += -std=c++0x -O3 -fPIC \
-	    -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE \
+INCLUDES += -I$(SDKSTAGE)/usr/local/include
 
-INCLUDES += -I ../DVB/include
+OBJS = mouse.o ../shared/cLog.o evtest.o
 
+all: mouse
 
-LDFLAGS  += -l pthread
-
-OBJS     += $(filter %.o,$(SRC:.cpp=.o))
-
-all:    mouse
-
-%.o:    %.cpp
+%.o: %.c
 	@rm -f $@
-	$(CXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-mouse:      $(OBJS)
-	$(CXX) $(LDFLAGS) -o mouse $(OBJS)
-	$(STRIP) mouse
+%.o: %.cpp
+	@rm -f $@
+	$(CXX) $(CFLAGS) $(INCLUDES) -std=c++0x -c $< -o $@
+
+mouse: $(OBJS)  $(LIB)
+	$(CXX) -o $@ -Wl,--whole-archive $(OBJS) $(LDFLAGS) -Wl,--no-whole-archive -rdynamic
+
+.PHONY: clean rebuild
+
+rebuild:
+	make clean && make
 
 clean:
 	@rm -f *.o
+	@rm -f ../shared/*.o
 	@rm -f mouse

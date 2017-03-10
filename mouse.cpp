@@ -14,7 +14,8 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <signal.h>
+
+#include <linux/input.h>
 
 #include "../shared/cLog.h"
 //}}}
@@ -33,6 +34,8 @@ int main (int argc, char** argv) {
   cLog::Init ("", LOGINFO3);
   cLog::Log (LOGNOTICE, "mouse");
 
+  evtest (arg, argv);
+
   int mScreenWidth = 800;
   int mScreenHeight = 480;
 
@@ -42,14 +45,14 @@ int main (int argc, char** argv) {
   int mScroll = 0;
 
   //int mMouseFd = open ("/dev/input/mouse0", O_RDWR);
-  int mMouseFd = open ("/dev/input/mice", O_RDWR);
+  auto mMouseFd = open ("/dev/input/mice", O_RDWR);
 
   const uint8_t kIntelliMouse[] = { 0xf3, 200, 0xf3, 100, 0xf3, 80 };
-  int bytes = write (mMouseFd, kIntelliMouse, sizeof(kIntelliMouse));
+  auto bytes = write (mMouseFd, kIntelliMouse, sizeof(kIntelliMouse));
 
   while (true) {
     struct sMousePacket mousePacket;
-    int bytes = read (mMouseFd, &mousePacket, sizeof(mousePacket));
+    auto bytes = read (mMouseFd, &mousePacket, sizeof(mousePacket));
     if (bytes < (int)sizeof(mousePacket)) {
       if ((bytes == 1) && (mousePacket.flags == 0xfa))
         cLog::Log (LOGINFO1, "mouse initial sync ok");
