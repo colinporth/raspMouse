@@ -24,7 +24,7 @@ struct sMousePacket {
   uint8_t buttons;
   int8_t dx;
   int8_t dy;
-  uint8_t n;
+  uint8_t ext;
   };
 //}}}
 //{{{
@@ -75,8 +75,8 @@ int main (int argc, char** argv) {
         mMousey = mScreenHeight;
 
       mMouseButtons = mousePacket.buttons & 0x03;
-      cLog::Log (LOGINFO1, "mouse %x %x %x - %d %d",
-                 mousePacket.buttons, mousePacket.dx, mousePacket.dy, mMousex, mMousey);
+      cLog::Log (LOGINFO1, "mouse %x %x %x %x  %d:%d",
+                 mousePacket.buttons, mousePacket.dx, mousePacket.dy, mousePacket.ext, mMousex, mMousey);
       }
 
     else {
